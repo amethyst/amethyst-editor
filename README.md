@@ -20,15 +20,11 @@ to visualize in the editor.
 ![An example of the editor running the Pong example game.](screenshots/pong.gif)
 
 Once your game is setup using [amethyst-editor-sync], you can simply run the game alongside the
-editor and the editor will automatically begin displaying your game's state. On the left is the list
-of entities, including the components attached to each entity. Clicking on an entity will show the
-data for each of the entity's components in the middle column. The right column displays the list of
-resources and the current state for each one.
-
-> NOTE: Running more than one instance of the editor or more than one game with editor support is
-> not currently supported. Doing so will causes errors/crashes in the editor, and you will not be
-> able to use multiple editor instances to debug multiple games at once. This functionality may
-> still be added though, see the issue tracker if you'd like to request this feature.
+editor and the editor will automatically begin displaying your game's state. When launched, the
+editor will not immediately open a window. Rather, it will run as a background process until you
+launch your game, at which point it will automatically open an editor window for the game. This also
+works if you have multiple games running, such as a server and multiple client instances for a
+multiplayer game.
 
 ## Motivation and Philosophy
 
