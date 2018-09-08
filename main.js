@@ -34,6 +34,12 @@ function getOrCreateWindow(port) {
     return window;
 }
 
+// Handle the 'windows-all-closed' event to prevent the default behavior of
+// quitting the application when all windows have closed. We want the main
+// process to continue to run in the background so that we can automatically
+// open editor windows as the user launches their game.
+app.on('window-all-closed', function() {});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
