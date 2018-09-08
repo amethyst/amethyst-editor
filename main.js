@@ -34,6 +34,12 @@ function getOrCreateWindow(port) {
     return window;
 }
 
+function handleTimeout(port) {
+    if (port in windows) {
+        windows[port].close();
+    }
+}
+
 // Handle the 'windows-all-closed' event to prevent the default behavior of
 // quitting the application when all windows have closed. We want the main
 // process to continue to run in the background so that we can automatically
@@ -56,6 +62,12 @@ app.on('ready', () => {
                 function(data, socket) {
                     let window = getOrCreateWindow(socket.port);
                     window.webContents.send('message', data);
+
+                    // Reset the timeout since we recieved a message from the game.
+                    if ('timeout' in window) {
+                        clearTimeout(window.timeout);
+                    }
+                    window.timeout = setTimeout(handleTimeout, 500, socket.port);
                 }
             );
         }
