@@ -28,7 +28,7 @@ function getOrCreateWindow(port) {
 
     // Emitted when the window is closed.
     window.on('closed', function() {
-        delete windows.port;
+        delete windows[port];
     });
 
     return window;
