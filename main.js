@@ -5,16 +5,7 @@ const {
 } = require('electron');
 const ipc = require('node-ipc');
 
-// Dictionary of active window objects, with the key being the port the window is connected from.
-// Windows are removed from the dictionary when they close.
-let windows = {};
-
-function getOrCreateWindow(port) {
-    // If there is already a window for the specified port, fetch it from `windows`.
-    if (port in windows) {
-        return windows[port];
-    }
-
+function createWindow() {
     // Create the browser window.
     let window = new BrowserWindow({
         width: 800,
@@ -24,32 +15,23 @@ function getOrCreateWindow(port) {
     // and load the index.html of the app.
     window.loadFile('index.html');
 
-    windows[port] = window;
-
-    // Emitted when the window is closed.
-    window.on('closed', function() {
-        delete windows[port];
-    });
-
     return window;
 }
 
-function handleTimeout(port) {
-    if (port in windows) {
-        windows[port].close();
-    }
+function handleTimeout(windowId) {
+    window.webContents.send('disconnect', { id: windowId });
+    delete timeouts[windowId];
 }
 
-// Handle the 'windows-all-closed' event to prevent the default behavior of
-// quitting the application when all windows have closed. We want the main
-// process to continue to run in the background so that we can automatically
-// open editor windows as the user launches their game.
-app.on('window-all-closed', function() {});
+let window;
+let timeouts = {};
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+    window = createWindow();
+
     ipc.config.id = 'world';
     ipc.config.retry = 1500;
     ipc.config.silent = true;
@@ -60,18 +42,43 @@ app.on('ready', () => {
             ipc.server.on(
                 'message',
                 function(data, socket) {
-                    let window = getOrCreateWindow(socket.port);
-                    window.webContents.send('message', data);
+                    let windowId = socket.port;
 
                     // Reset the timeout since we recieved a message from the game.
-                    if ('timeout' in window) {
-                        clearTimeout(window.timeout);
+                    if (windowId in timeouts) {
+                        clearTimeout(timeouts[windowId]);
+                        window.webContents.send('update', {
+                            id: windowId,
+                            data: data,
+                        });
+                    } else {
+                        window.webContents.send('connect', {
+                            id: windowId,
+                            data: data,
+                        });
                     }
-                    window.timeout = setTimeout(handleTimeout, 500, socket.port);
+                    timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
                 }
             );
         }
     );
 
     ipc.server.start();
+});
+
+// Quit when all windows are closed.
+app.on('window-all-closed', function() {
+    // On OS X it is common for applications and their menu bar
+    // to stay active until the user quits explicitly with Cmd + Q
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+app.on('activate', function() {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (mainWindow === null) {
+        createWindow();
+    }
 });
