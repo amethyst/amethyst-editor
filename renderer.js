@@ -43,7 +43,7 @@ exports.app = app;
 ipcRenderer.on('connect', (event, data) => {
     console.log('Connected to new game:', data);
 
-    app.games[data.id] = {
+    let game = {
         entities: [],
         components: [],
         resources: [],
@@ -67,9 +67,17 @@ ipcRenderer.on('connect', (event, data) => {
             this.resources = sortedResources;
         },
     };
+    game.update(data.data);
+
+    let tmp = {};
+    tmp[data.id] = game;
+
+    app.games = Object.assign({}, app.games, tmp);
 });
 
 ipcRenderer.on('disconnect', (event, data) => {
+    console.log('Disconnected from a game:', data);
+
     delete app.games[data.id];
 
     // TODO: We might need to update the index of the active game, depending on where in the list
@@ -77,10 +85,11 @@ ipcRenderer.on('disconnect', (event, data) => {
 });
 
 ipcRenderer.on('update', (event, data) => {
-    console.log(data);
-
-    let game = app.games[data.id];
-    game.update(data.data);
+    console.log('Updating data:', data);
+    if (data.id in app.games) {
+        let game = app.games[data.id];
+        game.update(data.data);
+    }
 });
 
 /**
