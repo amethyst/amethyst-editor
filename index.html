@@ -13,70 +13,87 @@
   </head>
   <body>
     <div id="app" class="section">
-      <!-- Tabs bar at the top of the page. -->
-      <div class="tabs is-centered">
+      <!-- Help message to display when no games are connected. -->
+      <div v-if="games.length == 0">
+        Run your game to begin debugging
+      </div>
+
+      <!-- Tabs for selecting the active game. -->
+      <div class="tabs" v-if="games.length > 1">
         <ul>
-          <li
-            v-for="(tab, index) in tabs"
-            v-bind:class="{ 'is-active': activeTab === index }"
-          >
-            <a v-on:click="selectTab(index)">{{ tab }}</a>
+          <li v-for="(game, index) in games" v-bind:class="{ 'is-active': index === activeGame }">
+            <a v-on:click="selectGame(index)">Game</a>
           </li>
         </ul>
       </div>
 
-      <!-- Entities tab. -->
-      <div v-if="activeTab === 0" class="columns">
-        <div class="column is-one-fifth">
-          <nav class="panel">
-            <h2 class="panel-heading">Entities</h2>
-              <a
-                v-for="entity in entities"
-                v-bind:class="{ 'is-active': entity.id === selectedEntity }"
-                v-on:click="selectEntity(entity.id)"
-                class="panel-block"
-              >
-                <span class="panel-icon">{{ entity.id }}</span>
-
-                <div class="tags">
-                  <span
-                    v-for="component in components"
-                    v-if="component.data[entity.id] !== undefined"
-                    v-bind:class="{
-                      'is-primary': component.data[entity.id] !== null,
-                      'is-info': component.data[entity.id] === null,
-                    }"
-                    class="tag"
-                  >
-                    {{ component.name }}
-                  </span>
-                </div>
-              </a>
-          </nav>
+      <!-- Currently selected game. -->
+      <div v-for="(game, index) in games" v-if="index === activeGame">
+        <!-- Tabs bar at the top of the page. -->
+        <div class="tabs is-centered">
+          <ul>
+            <li
+              v-for="(tab, index) in tabs"
+              v-bind:class="{ 'is-active': activeTab === index }"
+            >
+              <a v-on:click="selectTab(index)">{{ tab }}</a>
+            </li>
+          </ul>
         </div>
 
-        <div v-if="selectedEntity != null" class="column">
-          <div class="tags">
-            <div v-for="componentType in components" v-if="componentType.data[selectedEntity] === null" class="tag is-info is-large">
-              {{ componentType.name }}
+        <!-- Entities tab. -->
+        <div v-if="activeTab === 0" class="columns">
+          <div class="column is-one-fifth">
+            <nav class="panel">
+              <h2 class="panel-heading">Entities</h2>
+                <a
+                  v-for="entity in entities"
+                  v-bind:class="{ 'is-active': entity.id === selectedEntity }"
+                  v-on:click="selectEntity(entity.id)"
+                  class="panel-block"
+                >
+                  <span class="panel-icon">{{ entity.id }}</span>
+
+                  <div class="tags">
+                    <span
+                      v-for="component in components"
+                      v-if="component.data[entity.id] !== undefined"
+                      v-bind:class="{
+                        'is-primary': component.data[entity.id] !== null,
+                        'is-info': component.data[entity.id] === null,
+                      }"
+                      class="tag"
+                    >
+                      {{ component.name }}
+                    </span>
+                  </div>
+                </a>
+            </nav>
+          </div>
+
+          <div v-if="selectedEntity != null" class="column">
+            <div class="tags">
+              <div v-for="componentType in components" v-if="componentType.data[selectedEntity] === null" class="tag is-info is-large">
+                {{ componentType.name }}
+              </div>
+            </div>
+            <div v-for="componentType in components" v-if="componentType.data[selectedEntity] != null" class="box content">
+              <h3 class="title is-3">{{ componentType.name }}</h3>
+                <vue-json-pretty
+                  :data="componentType.data[selectedEntity]"
+                ></vue-json-pretty>
             </div>
           </div>
-          <div v-for="componentType in components" v-if="componentType.data[selectedEntity] != null" class="box content">
-            <h3 class="title is-3">{{ componentType.name }}</h3>
-              <vue-json-pretty
-                :data="componentType.data[selectedEntity]"
-              ></vue-json-pretty>
-          </div>
         </div>
-      </div>
 
-      <!-- Resources tab. -->
-      <div v-if="activeTab === 1">
-        <div v-for="resource in resources" class="box content">
-          <h3 class="title is-3">{{ resource.name }}</h3>
-          <vue-json-pretty
-            :data="resource.data"
-          ></vue-json-pretty>
+        <!-- Resources tab. -->
+        <div v-if="activeTab === 1">
+          <div v-for="resource in resources" class="box content">
+            <h3 class="title is-3">{{ resource.name }}</h3>
+            <vue-json-pretty
+              :data="resource.data"
+            ></vue-json-pretty>
+          </div>
         </div>
       </div>
     </div>

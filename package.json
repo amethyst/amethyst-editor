@@ -21,7 +21,8 @@
   },
   "devDependencies": {
     "electron": "^2.0.8",
-    "electron-builder": "^20.28.4"
+    "electron-builder": "^20.28.4",
+    "electron-devtools-installer": "^2.2.4"
   },
   "build": {
     "appId": "com.randompoison.editor"

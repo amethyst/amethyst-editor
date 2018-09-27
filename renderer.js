@@ -1,5 +1,6 @@
 const { ipcRenderer } = require('electron');
 const VueJsonPretty = require('vue-json-pretty').default;
+const { default: installExtension, VUEJS_DEVTOOLS } = require('electron-devtools-installer');
 
 let app = new Vue({
     el: '#app',
@@ -13,6 +14,7 @@ let app = new Vue({
 
         // A map containing the data for each game currently connected to the editor.
         games: {},
+        activeGame: 0,
 
         // The list of tabs that are available for each game. Each game tracks its own state for
         // which tab is currently selected.
@@ -23,18 +25,24 @@ let app = new Vue({
     },
 
     methods: {
+        selectGame: function(index) {
+            this.activeGame = index;
+        },
+
         selectEntity: function(entity) {
-            this.selectedEntity = entity;
+            this.games[this.activeGame].selectedEntity = entity;
         },
 
         selectTab: function(index) {
-            this.activeTab = index;
-        }
+            this.games[this.activeGame].activeTab = index;
+        },
     }
 });
 exports.app = app;
 
 ipcRenderer.on('connect', (event, data) => {
+    console.log('Connected to new game:', data);
+
     app.games[data.id] = {
         entities: [],
         components: [],
@@ -63,6 +71,9 @@ ipcRenderer.on('connect', (event, data) => {
 
 ipcRenderer.on('disconnect', (event, data) => {
     delete app.games[data.id];
+
+    // TODO: We might need to update the index of the active game, depending on where in the list
+    // of games the disconnected game was.
 });
 
 ipcRenderer.on('update', (event, data) => {
