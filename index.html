@@ -14,27 +14,31 @@
   <body>
     <div id="app" class="section">
       <!-- Help message to display when no games are connected. -->
-      <div v-if="games.length == 0">
-        Run your game to begin debugging
-      </div>
+      <section class="hero is-fullheight" v-if="gameIds.length == 0">
+        <div class="hero-body"v-if="gameIds.length == 0">
+          <h1 class="title">
+            Run your game in order to start debugging
+          </h1>
+        </div>
+      </section>
 
       <!-- Tabs for selecting the active game. -->
-      <div class="tabs" v-if="games.length > 1">
+      <div class="tabs" v-if="gameIds.length > 1">
         <ul>
-          <li v-for="(game, index) in games" v-bind:class="{ 'is-active': index === activeGame }">
-            <a v-on:click="selectGame(index)">Game</a>
+          <li v-for="(gameId, index) in games" v-bind:class="{ 'is-active': index === activeGame }">
+            <a v-on:click="selectGame(index)">{{ gameId }}</a>
           </li>
         </ul>
       </div>
 
       <!-- Currently selected game. -->
-      <div v-for="(game, index) in games" v-if="index === activeGame">
+      <div v-for="(gameId, index) in gameIds" v-if="gameIds.length > 0 && index === activeGame">
         <!-- Tabs bar at the top of the page. -->
         <div class="tabs is-centered">
           <ul>
             <li
               v-for="(tab, index) in tabs"
-              v-bind:class="{ 'is-active': activeTab === index }"
+              v-bind:class="{ 'is-active': games[gameId].activeTab === index }"
             >
               <a v-on:click="selectTab(index)">{{ tab }}</a>
             </li>
@@ -42,13 +46,13 @@
         </div>
 
         <!-- Entities tab. -->
-        <div v-if="activeTab === 0" class="columns">
+        <div v-if="games[gameId].activeTab === 0" class="columns">
           <div class="column is-one-fifth">
             <nav class="panel">
               <h2 class="panel-heading">Entities</h2>
                 <a
-                  v-for="entity in entities"
-                  v-bind:class="{ 'is-active': entity.id === selectedEntity }"
+                  v-for="entity in games[gameId].entities"
+                  v-bind:class="{ 'is-active': entity.id === games[gameId].selectedEntity }"
                   v-on:click="selectEntity(entity.id)"
                   class="panel-block"
                 >
@@ -56,7 +60,7 @@
 
                   <div class="tags">
                     <span
-                      v-for="component in components"
+                      v-for="component in games[gameId].components"
                       v-if="component.data[entity.id] !== undefined"
                       v-bind:class="{
                         'is-primary': component.data[entity.id] !== null,
@@ -71,24 +75,24 @@
             </nav>
           </div>
 
-          <div v-if="selectedEntity != null" class="column">
+          <div v-if="games[gameId].selectedEntity != null" class="column">
             <div class="tags">
-              <div v-for="componentType in components" v-if="componentType.data[selectedEntity] === null" class="tag is-info is-large">
+              <div v-for="componentType in games[gameId].components" v-if="componentType.data[games[gameId].selectedEntity] === null" class="tag is-info is-large">
                 {{ componentType.name }}
               </div>
             </div>
-            <div v-for="componentType in components" v-if="componentType.data[selectedEntity] != null" class="box content">
+            <div v-for="componentType in games[gameId].components" v-if="componentType.data[games[gameId].selectedEntity] != null" class="box content">
               <h3 class="title is-3">{{ componentType.name }}</h3>
                 <vue-json-pretty
-                  :data="componentType.data[selectedEntity]"
+                  :data="componentType.data[games[gameId].selectedEntity]"
                 ></vue-json-pretty>
             </div>
           </div>
         </div>
 
         <!-- Resources tab. -->
-        <div v-if="activeTab === 1">
-          <div v-for="resource in resources" class="box content">
+        <div v-if="games[gameId].activeTab === 1">
+          <div v-for="resource in games[gameId].resources" class="box content">
             <h3 class="title is-3">{{ resource.name }}</h3>
             <vue-json-pretty
               :data="resource.data"

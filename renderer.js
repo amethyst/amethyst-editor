@@ -13,6 +13,7 @@ let app = new Vue({
         process: process,
 
         // A map containing the data for each game currently connected to the editor.
+        gameIds: [],
         games: {},
         activeGame: 0,
 
@@ -30,11 +31,13 @@ let app = new Vue({
         },
 
         selectEntity: function(entity) {
-            this.games[this.activeGame].selectedEntity = entity;
+            let gameId = this.gameIds[this.activeGame];
+            this.games[gameId].selectedEntity = entity;
         },
 
         selectTab: function(index) {
-            this.games[this.activeGame].activeTab = index;
+            let gameId = this.gameIds[this.activeGame];
+            this.games[gameId].activeTab = index;
         },
     }
 });
@@ -42,6 +45,8 @@ exports.app = app;
 
 ipcRenderer.on('connect', (event, data) => {
     console.log('Connected to new game:', data);
+
+    app.gameIds.push(data.id);
 
     let game = {
         entities: [],
@@ -69,10 +74,7 @@ ipcRenderer.on('connect', (event, data) => {
     };
     game.update(data.data);
 
-    let tmp = {};
-    tmp[data.id] = game;
-
-    app.games = Object.assign({}, app.games, tmp);
+    Vue.set(app.games, data.id, game);
 });
 
 ipcRenderer.on('disconnect', (event, data) => {
