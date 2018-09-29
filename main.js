@@ -63,16 +63,12 @@ app.on('ready', () => {
                     // Reset the timeout since we recieved a message from the game.
                     if (windowId in timeouts) {
                         clearTimeout(timeouts[windowId]);
-                        mainWindow.webContents.send('update', {
-                            id: windowId,
-                            data: data,
-                        });
-                    } else {
-                        mainWindow.webContents.send('connect', {
-                            id: windowId,
-                            data: data,
-                        });
                     }
+
+                    mainWindow.webContents.send('data', {
+                        id: windowId,
+                        data: data,
+                    });
                     timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
                 }
             );

@@ -44,40 +44,6 @@ let app = new Vue({
 });
 exports.app = app;
 
-ipcRenderer.on('connect', (event, data) => {
-    console.log('Connected to new game:', data);
-
-    app.gameIds.push(data.id);
-
-    let game = {
-        entities: [],
-        components: [],
-        resources: [],
-        rawComponents: null,
-        selectedEntity: null,
-        activeTab: 0,
-
-        update: function(data) {
-            this.entities = data.entities;
-
-            // Sort components before updating the local data to ensure that components always appear
-            // in the same order regardless of the order they are sent in.
-            var sortedComponents = data.components;
-            sortedComponents.sort(compareNamed);
-            this.components = sortedComponents;
-
-            // Sort resources before updating the local data to ensure that resources always appear
-            // in the same order regardless of the order they are sent in.
-            var sortedResources = data.resources;
-            sortedResources.sort(compareNamed);
-            this.resources = sortedResources;
-        },
-    };
-    game.update(data.data);
-
-    Vue.set(app.games, data.id, game);
-});
-
 ipcRenderer.on('disconnect', (event, data) => {
     var index = app.gameIds.indexOf(data.id);
     if (index !== -1) {
@@ -100,10 +66,42 @@ ipcRenderer.on('disconnect', (event, data) => {
     }
 });
 
-ipcRenderer.on('update', (event, data) => {
+ipcRenderer.on('data', (event, data) => {
     if (data.id in app.games) {
         let game = app.games[data.id];
         game.update(data.data);
+    } else {
+        console.log('Connected to new game:', data);
+
+        app.gameIds.push(data.id);
+
+        let game = {
+            entities: [],
+            components: [],
+            resources: [],
+            rawComponents: null,
+            selectedEntity: null,
+            activeTab: 0,
+
+            update: function(data) {
+                this.entities = data.entities;
+
+                // Sort components before updating the local data to ensure that components always appear
+                // in the same order regardless of the order they are sent in.
+                var sortedComponents = data.components;
+                sortedComponents.sort(compareNamed);
+                this.components = sortedComponents;
+
+                // Sort resources before updating the local data to ensure that resources always appear
+                // in the same order regardless of the order they are sent in.
+                var sortedResources = data.resources;
+                sortedResources.sort(compareNamed);
+                this.resources = sortedResources;
+            },
+        };
+        game.update(data.data);
+
+        Vue.set(app.games, data.id, game);
     }
 });
 
