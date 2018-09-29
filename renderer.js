@@ -16,7 +16,7 @@ let app = new Vue({
         // A map containing the data for each game currently connected to the editor.
         gameIds: [],
         games: {},
-        activeGame: 0,
+        activeGameIndex: 0,
 
         // The list of tabs that are available for each game. Each game tracks its own state for
         // which tab is currently selected.
@@ -28,17 +28,25 @@ let app = new Vue({
 
     methods: {
         selectGame: function(index) {
-            this.activeGame = index;
+            this.activeGameIndex = index;
         },
 
         selectEntity: function(entity) {
-            let gameId = this.gameIds[this.activeGame];
+            let gameId = this.gameIds[this.activeGameIndex];
             this.games[gameId].selectedEntity = entity;
         },
 
         selectTab: function(index) {
-            let gameId = this.gameIds[this.activeGame];
+            let gameId = this.gameIds[this.activeGameIndex];
             this.games[gameId].activeTab = index;
+        },
+
+        activeGameId: function() {
+            return this.gameIds[this.activeGameIndex];
+        },
+
+        activeGame: function() {
+            return this.games[this.activeGameId()];
         },
     }
 });
@@ -55,12 +63,12 @@ ipcRenderer.on('disconnect', (event, data) => {
 
         // Update the index of the currently active game tab if selected tab was after the
         // removed tab.
-        if (index < app.activeGame) {
-            app.activeGame -= 1;
+        if (index < app.activeGameIndex) {
+            app.activeGameIndex -= 1;
         }
-        app.activeGame = clamp(app.activeGame, 0, app.gameIds.length - 1);
+        app.activeGameIndex = clamp(app.activeGameIndex, 0, app.gameIds.length - 1);
 
-        console.log(`Disconnected from ${data.id}, active game is now ${app.activeGame}, current game IDs`, app.gameIds);
+        console.log(`Disconnected from ${data.id}, active game is now ${app.activeGameIndex}, current game IDs`, app.gameIds);
     } else {
         console.log(`Disconnected from ${data.id} but game was not in list of game IDs`, app.gameIds);
     }
