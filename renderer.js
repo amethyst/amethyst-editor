@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron');
 const VueJsonPretty = require('vue-json-pretty').default;
 const { default: installExtension, VUEJS_DEVTOOLS } = require('electron-devtools-installer');
+const clamp = require('clamp');
 
 let app = new Vue({
     el: '#app',
@@ -78,16 +79,28 @@ ipcRenderer.on('connect', (event, data) => {
 });
 
 ipcRenderer.on('disconnect', (event, data) => {
-    console.log('Disconnected from a game:', data);
+    var index = app.gameIds.indexOf(data.id);
+    if (index !== -1) {
+        // Remove the game's data from the set of games.
+        Vue.delete(app.games, data.id);
 
-    delete app.games[data.id];
+        // Remove the game ID from the list of game IDs.
+        app.gameIds.splice(index, 1);
 
-    // TODO: We might need to update the index of the active game, depending on where in the list
-    // of games the disconnected game was.
+        // Update the index of the currently active game tab if selected tab was after the
+        // removed tab.
+        if (index < app.activeGame) {
+            app.activeGame -= 1;
+        }
+        app.activeGame = clamp(app.activeGame, 0, app.gameIds.length - 1);
+
+        console.log(`Disconnected from ${data.id}, active game is now ${app.activeGame}, current game IDs`, app.gameIds);
+    } else {
+        console.log(`Disconnected from ${data.id} but game was not in list of game IDs`, app.gameIds);
+    }
 });
 
 ipcRenderer.on('update', (event, data) => {
-    console.log('Updating data:', data);
     if (data.id in app.games) {
         let game = app.games[data.id];
         game.update(data.data);

@@ -25,7 +25,7 @@
       <!-- Tabs for selecting the active game. -->
       <div class="tabs" v-if="gameIds.length > 1">
         <ul>
-          <li v-for="(gameId, index) in games" v-bind:class="{ 'is-active': index === activeGame }">
+          <li v-for="(gameId, index) in gameIds" v-bind:class="{ 'is-active': index === activeGame }">
             <a v-on:click="selectGame(index)">{{ gameId }}</a>
           </li>
         </ul>
