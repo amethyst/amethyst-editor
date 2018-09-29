@@ -19,11 +19,11 @@ function createWindow() {
 }
 
 function handleTimeout(windowId) {
-    window.webContents.send('disconnect', { id: windowId });
+    mainWindow.webContents.send('disconnect', { id: windowId });
     delete timeouts[windowId];
 }
 
-let window;
+let mainWindow;
 let timeouts = {};
 
 // This method will be called when Electron has finished
@@ -38,7 +38,12 @@ app.on('ready', () => {
             console.log('Unable to install `vue-devtools`: \n', err)
         });
 
-    window = createWindow();
+    mainWindow = createWindow();
+
+    // Clear the global window reference when the window closes.
+    mainWindow.on('closed', function() {
+        mainWindow = null;
+    });
 
     ipc.config.id = 'world';
     ipc.config.retry = 1500;
@@ -50,17 +55,20 @@ app.on('ready', () => {
             ipc.server.on(
                 'message',
                 function(data, socket) {
+                    // It's possible that the main window has closed but we're still receiving
+                    // IPC messages, in which case we simply want to ignore incoming messages.
+                    if (mainWindow === null) { return; }
                     let windowId = socket.port;
 
                     // Reset the timeout since we recieved a message from the game.
                     if (windowId in timeouts) {
                         clearTimeout(timeouts[windowId]);
-                        window.webContents.send('update', {
+                        mainWindow.webContents.send('update', {
                             id: windowId,
                             data: data,
                         });
                     } else {
-                        window.webContents.send('connect', {
+                        mainWindow.webContents.send('connect', {
                             id: windowId,
                             data: data,
                         });
