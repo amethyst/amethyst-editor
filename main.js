@@ -42,6 +42,8 @@ app.on('ready', () => {
 
     mainWindow = createWindow();
 
+    let buffers = {};
+
     // Clear the global window reference when the window closes.
     mainWindow.on('closed', function() {
         mainWindow = null;
@@ -49,17 +51,21 @@ app.on('ready', () => {
 
     ipc.config.id = 'world';
     ipc.config.retry = 1500;
-    ipc.config.silent = true;
+    ipc.config.rawBuffer = true;
+    // ipc.config.silent = true;
 
     ipc.serveNet(
         'udp4',
         function() {
             ipc.server.on(
-                'message',
+                'data',
                 function(data, socket) {
                     // It's possible that the main window has closed but we're still receiving
                     // IPC messages, in which case we simply want to ignore incoming messages.
                     if (mainWindow === null) { return; }
+
+                    // TODO: Do we need more than the port to identify the window? Probably, if
+                    // we want to support the editor working over the network.
                     let windowId = socket.port;
 
                     // Reset the timeout since we recieved a message from the game.
@@ -67,11 +73,31 @@ app.on('ready', () => {
                         clearTimeout(timeouts[windowId]);
                     }
 
-                    mainWindow.webContents.send('data', {
-                        id: windowId,
-                        data: data,
-                    });
-                    timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
+                    // Attempt to extract the next message from the buffer.
+                    //
+                    // If we have data from a previous packet, concatenate it with the new data.
+                    // Otherwise, just use the new data.
+                    let buffer;
+                    if (windowId in buffers) {
+                        let prev = buffers[windowId];
+                        delete buffers[windowId];
+                        buffer = Buffer.concat([prev, data]);
+                    } else {
+                        buffer = data;
+                    }
+
+                    let { message, remaining } = extractMessage(buffer);
+
+                    buffers[windowId] = remaining;
+
+                    if (message != null) {
+                        // TODO: Parse the JSON and send it to the window.
+                        // mainWindow.webContents.send('data', {
+                        //     id: windowId,
+                        //     data: data,
+                        // });
+                        // timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
+                    }
                 }
             );
         }
@@ -96,3 +122,20 @@ app.on('activate', function() {
         createWindow();
     }
 });
+
+/**
+ * Extracts the first message present in `buffer`, returning the message string
+ * and the remaining portion of the buffer.
+ */
+function extractMessage(buffer) {
+    let index = buffer.indexOf('\f');
+    if (index >= 0) {
+        let remaining = Buffer.from(buffer, index + 1);
+        return {
+            message: buffer.toString('utf8', 0, index),
+            remaining: remaining,
+        };
+    } else {
+        return { remaining: buffer };
+    }
+}
