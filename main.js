@@ -52,7 +52,7 @@ app.on('ready', () => {
     ipc.config.id = 'world';
     ipc.config.retry = 1500;
     ipc.config.rawBuffer = true;
-    // ipc.config.silent = true;
+    ipc.config.silent = true;
 
     ipc.serveNet(
         'udp4',
@@ -88,15 +88,16 @@ app.on('ready', () => {
 
                     let { message, remaining } = extractMessage(buffer);
 
-                    buffers[windowId] = remaining;
+                    if (remaining != null) {
+                        buffers[windowId] = remaining;
+                    }
 
                     if (message != null) {
-                        // TODO: Parse the JSON and send it to the window.
-                        // mainWindow.webContents.send('data', {
-                        //     id: windowId,
-                        //     data: data,
-                        // });
-                        // timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
+                        mainWindow.webContents.send('data', {
+                            id: windowId,
+                            data: message.data,
+                        });
+                        timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
                     }
                 }
             );
@@ -130,11 +131,22 @@ app.on('activate', function() {
 function extractMessage(buffer) {
     let index = buffer.indexOf('\f');
     if (index >= 0) {
-        let remaining = Buffer.from(buffer, index + 1);
-        return {
-            message: buffer.toString('utf8', 0, index),
-            remaining: remaining,
-        };
+        let remaining;
+        if (buffer.length > index) {
+            remaining = buffer.slice(index + 1);
+        }
+
+        let messageString = buffer.toString('utf8', 0, index);
+
+        try {
+            let message = JSON.parse(messageString);
+            return {
+                message: message,
+                remaining: remaining,
+            };
+        } catch (error) {
+            return { remaining: remaining };
+        }
     } else {
         return { remaining: buffer };
     }
