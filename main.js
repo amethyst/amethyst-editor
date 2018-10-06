@@ -86,18 +86,28 @@ app.on('ready', () => {
                         buffer = data;
                     }
 
-                    let { message, remaining } = extractMessage(buffer);
+                    // A single packet may contain multiple messages, so repeatedly pull any
+                    // complete messages from the buffer.
+                    while (true) {
+                        // Pull the next message from the buffered data, if any.
+                        let { message, remaining } = extractMessage(buffer);
+                        buffer = remaining;
 
-                    if (remaining != null) {
-                        buffers[windowId] = remaining;
-                    }
+                        // If no message could be pulled from the buffer, stop parsing.
+                        if (message == null) { break; }
 
-                    if (message != null) {
+                        // Send the message to the editor window.
                         mainWindow.webContents.send('data', {
                             id: windowId,
                             data: message.data,
                         });
                         timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
+                    }
+
+                    // If there was any remaining data after all messages were parsed, store that
+                    // data so that we can append the next packets we receive.
+                    if (buffer != null) {
+                        buffers[windowId] = buffer;
                     }
                 }
             );
