@@ -8,6 +8,12 @@ where applicable.
 
 ## [Unreleased]
 
+### Breaking Changes
+
+* Switch to raw buffers in order to support reassembling split messages. ([#31])
+
+[#31]: https://github.com/randomPoison/amethyst-editor/pull/31
+
 ## [0.1.0] - 2018-10-03
 
 ### Added
