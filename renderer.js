@@ -94,23 +94,31 @@ ipcRenderer.on('data', (event, data) => {
             selectedEntity: null,
             activeTab: 0,
             update: function(data) {
-                this.entities = data.entities;
+                if (data.entities != null) {
+                    this.entities = data.entities;
+                }
 
-                // Sort components before updating the local data to ensure that components always appear
-                // in the same order regardless of the order they are sent in.
-                var sortedComponents = data.components;
-                sortedComponents.sort(compareNamed);
-                this.components = sortedComponents;
+                if (data.components != null) {
+                    // Sort components before updating the local data to ensure that components always appear
+                    // in the same order regardless of the order they are sent in.
+                    var sortedComponents = data.components;
+                    sortedComponents.sort(compareNamed);
+                    this.components = sortedComponents;
+                }
 
-                // Sort resources before updating the local data to ensure that resources always appear
-                // in the same order regardless of the order they are sent in.
-                var sortedResources = data.resources;
-                sortedResources.sort(compareNamed);
-                this.resources = sortedResources;
+                if (data.resources != null) {
+                    // Sort resources before updating the local data to ensure that resources always appear
+                    // in the same order regardless of the order they are sent in.
+                    var sortedResources = data.resources;
+                    sortedResources.sort(compareNamed);
+                    this.resources = sortedResources;
+                }
 
-                for (message of data.messages) {
-                    if (message.type === 'log') {
-                        this.insertLog(message.data);
+                if (data.messages != null) {
+                    for (message of data.messages) {
+                        if (message.type === 'log') {
+                            this.insertLog(message.data);
+                        }
                     }
                 }
             },
