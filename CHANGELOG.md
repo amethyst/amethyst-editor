@@ -8,11 +8,13 @@ where applicable.
 
 ## [Unreleased]
 
-### Breaking Changes
+### Added
 
 * Switch to raw buffers in order to support reassembling split messages. ([#31])
+* Support for receiving partial data from the game. ([#33])
 
 [#31]: https://github.com/randomPoison/amethyst-editor/pull/31
+[#33]: https://github.com/randomPoison/amethyst-editor/pull/33
 
 ## [0.1.0] - 2018-10-03
 
