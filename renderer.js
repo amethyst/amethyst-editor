@@ -112,6 +112,17 @@ ipcRenderer.on('data', (event, data) => {
                     var sortedResources = data.resources;
                     sortedResources.sort(compareNamed);
                     this.resources = sortedResources;
+
+                    for (var resource of sortedResources) {
+                        if (resource.name === 'ScoreBoard') {
+                            var updated = Object.assign({}, resource.data);
+                            updated.score_left = 77;
+                            ipcRenderer.send('update-resource', {
+                                type: resource.name,
+                                data: updated,
+                            });
+                        }
+                    }
                 }
 
                 if (data.messages != null) {

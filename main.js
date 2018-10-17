@@ -2,6 +2,7 @@
 const {
     app,
     BrowserWindow,
+    ipcMain,
 } = require('electron');
 const ipc = require('node-ipc');
 
@@ -24,6 +25,8 @@ function handleTimeout(windowId) {
 }
 
 let mainWindow;
+let sockets = {};
+let buffers = {};
 let timeouts = {};
 
 // This method will be called when Electron has finished
@@ -42,8 +45,6 @@ app.on('ready', () => {
 
     mainWindow = createWindow();
 
-    let buffers = {};
-
     // Clear the global window reference when the window closes.
     mainWindow.on('closed', function() {
         mainWindow = null;
@@ -56,65 +57,67 @@ app.on('ready', () => {
 
     ipc.serveNet(
         'udp4',
-        function() {
-            ipc.server.on(
-                'data',
-                function(data, socket) {
-                    // It's possible that the main window has closed but we're still receiving
-                    // IPC messages, in which case we simply want to ignore incoming messages.
-                    if (mainWindow === null) { return; }
-
-                    // TODO: Do we need more than the port to identify the window? Probably, if
-                    // we want to support the editor working over the network.
-                    let windowId = socket.port;
-
-                    // Reset the timeout since we recieved a message from the game.
-                    if (windowId in timeouts) {
-                        clearTimeout(timeouts[windowId]);
-                    }
-
-                    // Attempt to extract the next message from the buffer.
-                    //
-                    // If we have data from a previous packet, concatenate it with the new data.
-                    // Otherwise, just use the new data.
-                    let buffer;
-                    if (windowId in buffers) {
-                        let prev = buffers[windowId];
-                        delete buffers[windowId];
-                        buffer = Buffer.concat([prev, data]);
-                    } else {
-                        buffer = data;
-                    }
-
-                    // A single packet may contain multiple messages, so repeatedly pull any
-                    // complete messages from the buffer.
-                    while (true) {
-                        // Pull the next message from the buffered data, if any.
-                        let { message, remaining } = extractMessage(buffer);
-                        buffer = remaining;
-
-                        // If no message could be pulled from the buffer, stop parsing.
-                        if (message == null) { break; }
-
-                        // Send the message to the editor window.
-                        mainWindow.webContents.send('data', {
-                            id: windowId,
-                            data: message.data,
-                        });
-                        timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
-                    }
-
-                    // If there was any remaining data after all messages were parsed, store that
-                    // data so that we can append the next packets we receive.
-                    if (buffer != null) {
-                        buffers[windowId] = buffer;
-                    }
-                }
-            );
-        }
+        () => { ipc.server.on('data', onGameMessage); },
     );
 
     ipc.server.start();
+});
+
+function onGameMessage(data, socket) {
+    // It's possible that the main window has closed but we're still receiving
+    // IPC messages, in which case we simply want to ignore incoming messages.
+    if (mainWindow === null) { return; }
+
+    // TODO: Do we need more than the port to identify the window? Probably, if
+    // we want to support the editor working over the network.
+    let windowId = socket.port;
+
+    // Reset the timeout since we recieved a message from the game.
+    if (windowId in timeouts) {
+        clearTimeout(timeouts[windowId]);
+    }
+
+    // Attempt to extract the next message from the buffer.
+    //
+    // If we have data from a previous packet, concatenate it with the new data.
+    // Otherwise, just use the new data.
+    let buffer;
+    if (windowId in buffers) {
+        let prev = buffers[windowId];
+        delete buffers[windowId];
+        buffer = Buffer.concat([prev, data]);
+    } else {
+        buffer = data;
+    }
+
+    // A single packet may contain multiple messages, so repeatedly pull any
+    // complete messages from the buffer.
+    while (true) {
+        // Pull the next message from the buffered data, if any.
+        let { message, remaining } = extractMessage(buffer);
+        buffer = remaining;
+
+        // If no message could be pulled from the buffer, stop parsing.
+        if (message == null) { break; }
+
+        // Send the message to the editor window.
+        mainWindow.webContents.send('data', {
+            id: windowId,
+            data: message.data,
+        });
+        timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
+    }
+
+    // If there was any remaining data after all messages were parsed, store that
+    // data so that we can append the next packets we receive.
+    if (buffer != null) {
+        buffers[windowId] = buffer;
+    }
+}
+
+ipcMain.on('update-resource', (event, arg) => {
+    console.log('event:', event);
+    console.log('arg:', arg);
 });
 
 // Quit when all windows are closed.
