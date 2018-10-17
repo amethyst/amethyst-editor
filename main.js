@@ -19,9 +19,9 @@ function createWindow() {
     return window;
 }
 
-function handleTimeout(windowId) {
-    mainWindow.webContents.send('disconnect', { id: windowId });
-    delete timeouts[windowId];
+function handleTimeout(gameId) {
+    mainWindow.webContents.send('disconnect', { id: gameId });
+    delete timeouts[gameId];
 }
 
 let mainWindow;
@@ -70,11 +70,11 @@ function onGameMessage(data, socket) {
 
     // TODO: Do we need more than the port to identify the window? Probably, if
     // we want to support the editor working over the network.
-    let windowId = socket.port;
+    let gameId = socket.port;
 
     // Reset the timeout since we recieved a message from the game.
-    if (windowId in timeouts) {
-        clearTimeout(timeouts[windowId]);
+    if (gameId in timeouts) {
+        clearTimeout(timeouts[gameId]);
     }
 
     // Attempt to extract the next message from the buffer.
@@ -82,9 +82,9 @@ function onGameMessage(data, socket) {
     // If we have data from a previous packet, concatenate it with the new data.
     // Otherwise, just use the new data.
     let buffer;
-    if (windowId in buffers) {
-        let prev = buffers[windowId];
-        delete buffers[windowId];
+    if (gameId in buffers) {
+        let prev = buffers[gameId];
+        delete buffers[gameId];
         buffer = Buffer.concat([prev, data]);
     } else {
         buffer = data;
@@ -102,22 +102,34 @@ function onGameMessage(data, socket) {
 
         // Send the message to the editor window.
         mainWindow.webContents.send('data', {
-            id: windowId,
+            id: gameId,
             data: message.data,
         });
-        timeouts[windowId] = setTimeout(handleTimeout, 500, socket.port);
+        timeouts[gameId] = setTimeout(handleTimeout, 500, socket.port);
     }
 
     // If there was any remaining data after all messages were parsed, store that
     // data so that we can append the next packets we receive.
     if (buffer != null) {
-        buffers[windowId] = buffer;
+        buffers[gameId] = buffer;
     }
 }
 
 ipcMain.on('update-resource', (event, arg) => {
-    console.log('event:', event);
     console.log('arg:', arg);
+
+    let gameId = arg.gameId;
+    if (!(gameId in sockets)) {
+        return;
+    }
+    let socket = sockets[gameId];
+
+    var message = {
+        type: 'ResourceUpdate',
+        id: arg.id,
+        data: arg.data,
+    };
+    ipc.server.emit(socket, JSON.stringify(message));
 });
 
 // Quit when all windows are closed.

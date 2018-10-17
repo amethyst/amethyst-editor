@@ -86,6 +86,7 @@ ipcRenderer.on('data', (event, data) => {
         app.gameIds.push(data.id);
 
         let game = {
+            gameId: data.id,
             entities: [],
             components: [],
             resources: [],
@@ -118,7 +119,8 @@ ipcRenderer.on('data', (event, data) => {
                             var updated = Object.assign({}, resource.data);
                             updated.score_left = 77;
                             ipcRenderer.send('update-resource', {
-                                type: resource.name,
+                                gameId: this.gameId,
+                                id: resource.name,
                                 data: updated,
                             });
                         }
