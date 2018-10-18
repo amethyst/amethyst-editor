@@ -93,6 +93,7 @@ ipcRenderer.on('data', (event, data) => {
             rawComponents: null,
             selectedEntity: null,
             activeTab: 0,
+
             update: function(data) {
                 if (data.entities != null) {
                     this.entities = data.entities;
@@ -122,12 +123,14 @@ ipcRenderer.on('data', (event, data) => {
                     }
                 }
             },
+
             insertLog: function(log) {
                 if (this.logs.length >= MAX_LOGS) {
                     this.logs.shift();
                 }
                 this.logs.push(log);
             },
+
             entityHasTags: function(entity) {
                 for (component of this.components) {
                     if (component.data[entity] === null) {
@@ -136,7 +139,17 @@ ipcRenderer.on('data', (event, data) => {
                 }
 
                 return false
-            }
+            },
+
+            editResource: function(id, data) {
+                console.log(`Edited resource ${id} in game ${this.gameId}:`, data);
+
+                ipcRenderer.send('update-resource', {
+                    gameId: this.gameId,
+                    id: id,
+                    data: data,
+                });
+            },
         };
         game.update(data.data);
 

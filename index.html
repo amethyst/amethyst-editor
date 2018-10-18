@@ -115,7 +115,7 @@
         <div v-if="activeGame().activeTab === 1" class="main vertical-panel scrollable">
           <div v-for="resource in activeGame().resources" class="box content">
             <h3 class="title is-3">{{ resource.name }}</h3>
-            <data-display :data="resource.data"></data-display>
+            <data-display :data="resource.data" v-on:save-edits="activeGame().editResource(resource.name, $event)"></data-display>
           </div>
         </div>
 
