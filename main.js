@@ -20,7 +20,11 @@ function createWindow() {
 }
 
 function handleTimeout(gameId) {
+    // Notify the render process that we've disconnected from the game.
     mainWindow.webContents.send('disconnect', { id: gameId });
+
+    // Clear any local state specific to the game.
+    delete sockets[gameId];
     delete timeouts[gameId];
 }
 
@@ -71,6 +75,9 @@ function onGameMessage(data, socket) {
     // TODO: Do we need more than the port to identify the window? Probably, if
     // we want to support the editor working over the network.
     let gameId = socket.port;
+
+    // Update the socket map for the game.
+    sockets[gameId] = socket;
 
     // Reset the timeout since we recieved a message from the game.
     if (gameId in timeouts) {
@@ -123,13 +130,14 @@ ipcMain.on('update-resource', (event, arg) => {
         return;
     }
     let socket = sockets[gameId];
+    console.log('Sending to socket:', socket);
 
     var message = {
         type: 'ResourceUpdate',
         id: arg.id,
         data: arg.data,
     };
-    ipc.server.emit(socket, JSON.stringify(message));
+    ipc.server.emit(socket, JSON.stringify(message) + '\f');
 });
 
 // Quit when all windows are closed.
