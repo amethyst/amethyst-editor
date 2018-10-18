@@ -8,9 +8,6 @@ const MAX_LOGS = 500;
 
 let app = new Vue({
     el: '#app',
-    components: {
-        VueJsonPretty,
-    },
 
     data: {
         // Capture data about the Electron process so that we can display it in the app if we want.
