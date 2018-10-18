@@ -26,16 +26,22 @@ Vue.component('data-display', {
     },
 
     methods: {
-        generateEdited: function() {
+        applyEdits: function() {
+            // Create a copy of the data, overriding any edited fields with the
+            // corresponding values.
             let copy = Object.assign({}, this.data);
             let edited = Object.assign(copy, this.editedValues);
+
+            // Discard the previous edits.
             this.editedValues = {};
-            return edited;
-        },
+
+            // Emit the edited data.
+            this.$emit('save-edits', edited);
+        }
     },
 
     template: `
-        <div class="data-display" v-bind:class="{ 'is-root': isRoot }">
+        <form v-on:submit.prevent="" class="data-display" v-bind:class="{ 'is-root': isRoot }">
             <ul>
                 <li v-for="(value, key) in data">
 
@@ -59,6 +65,7 @@ Vue.component('data-display', {
                                 v-else
                                 v-model="editedValues[key]"
                                 v-bind:placeholder="value"
+                                v-on:submit.prevent="applyEdits()"
                                 class="input"
                             >
                         </div>
@@ -67,13 +74,12 @@ Vue.component('data-display', {
             </ul>
 
             <button
-                v-if="isRoot"
-                v-on:click="$emit('save-edits', generateEdited())"
+                v-if="isRoot && hasEdits"
+                v-on:click="applyEdits()"
                 class="button is-fullwidth is-primary"
-                v-bind:disabled="!hasEdits"
             >
                 Apply
             </button>
-        </div>
+        </form>
     `,
 });
