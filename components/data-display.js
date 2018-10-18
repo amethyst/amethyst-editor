@@ -37,6 +37,14 @@ Vue.component('data-display', {
                                 <label class="label">{{ key }}</label>
                             </div>
                             <input
+                                v-if="typeof value === 'number'"
+                                v-model.number="editedValues[key]"
+                                v-bind:placeholder="value"
+                                type="number"
+                                class="input"
+                            >
+                            <input
+                                v-else
                                 v-model="editedValues[key]"
                                 v-bind:placeholder="value"
                                 class="input"
