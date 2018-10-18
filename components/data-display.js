@@ -16,7 +16,9 @@ Vue.component('data-display', {
     methods: {
         generateEdited: function() {
             let copy = Object.assign({}, this.data);
-            return Object.assign(copy, this.editedValues);
+            let edited = Object.assign(copy, this.editedValues);
+            this.editedValues = {};
+            return edited;
         },
     },
 
