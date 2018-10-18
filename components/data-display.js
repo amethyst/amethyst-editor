@@ -13,6 +13,18 @@ Vue.component('data-display', {
         };
     },
 
+    computed: {
+        hasEdits: function() {
+            for (let prop in this.editedValues) {
+                if (this.editedValues.hasOwnProperty(prop)) {
+                    return true;
+                }
+            }
+
+            return false;
+        },
+    },
+
     methods: {
         generateEdited: function() {
             let copy = Object.assign({}, this.data);
@@ -54,7 +66,14 @@ Vue.component('data-display', {
                 </li>
             </ul>
 
-            <button v-if="isRoot" v-on:click="$emit('save-edits', generateEdited())">Save</button>
+            <button
+                v-if="isRoot"
+                v-on:click="$emit('save-edits', generateEdited())"
+                class="button is-fullwidth is-primary"
+                v-bind:disabled="!hasEdits"
+            >
+                Apply
+            </button>
         </div>
     `,
 });
