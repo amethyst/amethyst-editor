@@ -13,6 +13,13 @@ Vue.component('data-display', {
         };
     },
 
+    methods: {
+        generateEdited: function() {
+            let copy = Object.assign({}, this.data);
+            return Object.assign(copy, this.editedValues);
+        },
+    },
+
     template: `
         <div class="data-display" v-bind:class="{ 'is-root': isRoot }">
             <ul>
@@ -37,7 +44,7 @@ Vue.component('data-display', {
                 </li>
             </ul>
 
-            <button v-if="isRoot" v-on:click="$emit('save-edits', data)">Save</button>
+            <button v-if="isRoot" v-on:click="$emit('save-edits', generateEdited())">Save</button>
         </div>
     `,
 });
