@@ -102,9 +102,9 @@
               class="box content"
             >
               <h3 class="title is-3">{{ componentType.name }}</h3>
-                <vue-json-pretty
+                <data-display
                   :data="componentType.data[activeGame().selectedEntity]"
-                ></vue-json-pretty>
+                ></data-display>
             </div>
           </div>
 
@@ -115,7 +115,7 @@
         <div v-if="activeGame().activeTab === 1" class="main vertical-panel scrollable">
           <div v-for="resource in activeGame().resources" class="box content">
             <h3 class="title is-3">{{ resource.name }}</h3>
-            <vue-json-pretty :data="resource.data"></vue-json-pretty>
+            <data-display :data="resource.data"></data-display>
           </div>
         </div>
 

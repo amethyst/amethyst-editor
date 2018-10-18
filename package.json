@@ -15,8 +15,7 @@
     "clamp": "^1.0.1",
     "node-ipc": "^9.1.1",
     "npm": "^6.4.1",
-    "vue": "^2.5.17",
-    "vue-json-pretty": "^1.4.1"
+    "vue": "^2.5.17"
   },
   "devDependencies": {
     "electron": "^3.0.2",

@@ -1,6 +1,8 @@
 const { ipcRenderer } = require('electron');
-const VueJsonPretty = require('vue-json-pretty').default;
 const clamp = require('clamp');
+
+// Load custom components.
+require('./components/data-display.js');
 
 const MAX_LOGS = 500;
 
@@ -113,18 +115,6 @@ ipcRenderer.on('data', (event, data) => {
                     var sortedResources = data.resources;
                     sortedResources.sort(compareNamed);
                     this.resources = sortedResources;
-
-                    for (var resource of sortedResources) {
-                        if (resource.name === 'ScoreBoard') {
-                            var updated = Object.assign({}, resource.data);
-                            updated.score_left = 77;
-                            ipcRenderer.send('update-resource', {
-                                gameId: this.gameId,
-                                id: resource.name,
-                                data: updated,
-                            });
-                        }
-                    }
                 }
 
                 if (data.messages != null) {

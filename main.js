@@ -123,14 +123,11 @@ function onGameMessage(data, socket) {
 }
 
 ipcMain.on('update-resource', (event, arg) => {
-    console.log('arg:', arg);
-
     let gameId = arg.gameId;
     if (!(gameId in sockets)) {
         return;
     }
     let socket = sockets[gameId];
-    console.log('Sending to socket:', socket);
 
     var message = {
         type: 'ResourceUpdate',
