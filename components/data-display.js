@@ -3,18 +3,14 @@ Vue.component('data-display', {
         data: [Object, Array],
     },
 
+    data: function() {
+        return {
+            editedValue: null,
+        };
+    },
+
     computed: {
-        hasEdits: function() {
-            if (this.$refs.nestedData != null) {
-                return this.$refs.nestedData.hasEdits;
-            }
-
-            return false;
-        },
-
-        editedValue: function() {
-            return this.$refs.nestedData.editedValue;
-        }
+        hasEdits: function() { return this.editedValue != null; }
     },
 
     methods: {
@@ -24,7 +20,7 @@ Vue.component('data-display', {
         },
 
         clearEdits: function() {
-            this.edits = {};
+            this.editedValue = null;
             if (this.$refs.nestedData != null) {
                 this.$refs.nestedData.clearEdits();
             }
@@ -35,10 +31,12 @@ Vue.component('data-display', {
         <form v-on:submit.prevent="submitEdits()" class="data-display">
             <nested-data
                 :data="data"
+                v-model="editedValue"
                 ref="nestedData"
             ></nested-data>
 
             <input
+                v-if="hasEdits"
                 type="submit"
                 class="button is-fullwidth is-primary"
             >
