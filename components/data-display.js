@@ -35,7 +35,16 @@ Vue.component('data-display', {
     methods: {
         applyEdits: function() {
             this.$emit('submit', this.editedValue);
+            this.clearEdits();
+        },
+
+        clearEdits: function() {
             this.edits = {};
+            if (this.$refs.nestedData != null) {
+                for (let child of this.$refs.nestedData) {
+                    child.clearEdits();
+                }
+            }
         }
     },
 
@@ -51,6 +60,7 @@ Vue.component('data-display', {
                             v-model="edits[key]"
                             v-on:input="$emit('input', editedValue)"
                             v-on:submit.prevent="applyEdits()"
+                            ref="nestedData"
                             :isRoot="false"
                         ></data-display>
                     </template>
