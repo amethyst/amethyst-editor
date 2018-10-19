@@ -9,34 +9,33 @@ Vue.component('data-display', {
 
     data: function() {
         return {
-            editedValues: {},
+            edits: {},
         };
     },
 
     computed: {
         hasEdits: function() {
-            for (let prop in this.editedValues) {
-                if (this.editedValues.hasOwnProperty(prop)) {
+            for (let prop in this.edits) {
+                if (this.edits.hasOwnProperty(prop)) {
                     return true;
                 }
             }
 
             return false;
         },
+
+        editedValue: function() {
+            // Create a copy of the data, overriding any edited fields with the
+            // corresponding values.
+            let copy = Object.assign({}, this.data);
+            return Object.assign(copy, this.edits);
+        }
     },
 
     methods: {
         applyEdits: function() {
-            // Create a copy of the data, overriding any edited fields with the
-            // corresponding values.
-            let copy = Object.assign({}, this.data);
-            let edited = Object.assign(copy, this.editedValues);
-
-            // Discard the previous edits.
-            this.editedValues = {};
-
-            // Emit the edited data.
-            this.$emit('save-edits', edited);
+            this.$emit('submit', this.editedValue);
+            this.edits = {};
         }
     },
 
@@ -47,7 +46,13 @@ Vue.component('data-display', {
 
                     <template v-if="value instanceof Object || value instanceof Array">
                         <label class="label">{{ key }}</label>
-                        <data-display :data="value" :isRoot="false"></data-display>
+                        <data-display
+                            :data="value"
+                            v-model="edits[key]"
+                            v-on:input="$emit('input', editedValue)"
+                            v-on:submit.prevent="applyEdits()"
+                            :isRoot="false"
+                        ></data-display>
                     </template>
                     <template v-else>
                         <div class="field is-horizontal">
@@ -56,15 +61,18 @@ Vue.component('data-display', {
                             </div>
                             <input
                                 v-if="typeof value === 'number'"
-                                v-model.number="editedValues[key]"
+                                v-model.number="edits[key]"
                                 v-bind:placeholder="value"
+                                v-on:input="$emit('input', editedValue)"
+                                v-on:submit.prevent="applyEdits()"
                                 type="number"
                                 class="input"
                             >
                             <input
                                 v-else
-                                v-model="editedValues[key]"
+                                v-model="edits[key]"
                                 v-bind:placeholder="value"
+                                v-on:input="$emit('input', editedValue)"
                                 v-on:submit.prevent="applyEdits()"
                                 class="input"
                             >
