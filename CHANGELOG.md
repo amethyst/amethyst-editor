@@ -8,6 +8,12 @@ where applicable.
 
 ## [Unreleased]
 
+### Added
+
+* :tada: Support for editing resources! :tada: ([#34])
+
+[#34]: https://github.com/randomPoison/amethyst-editor/pull/34
+
 ## [0.2.0] - 2018-10-14
 
 ### Added
