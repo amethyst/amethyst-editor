@@ -71,7 +71,7 @@ body {
   list-style: none;
 }
 
-.data-display:not(.is-root) ul {
+.data-display ul:not(:first-child) {
   padding-left: 1.5em;
 }
 
