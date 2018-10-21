@@ -1,3 +1,13 @@
+/**
+ * Component for displaying and editing arbitrary JSON data.
+ *
+ * Displays arbitrary, potentially nested JSON data (given as an Object or
+ * Array) in a clean, user-friendly way. Supports editing one or more fields
+ * of the input data and "submitting" the modified data like a form.
+ *
+ * Internally uses `<nested-data>` to recursively display nested object data,
+ * including tracking the modified version of the data as the user makes edits.
+ */
 Vue.component('data-display', {
     props: {
         data: [Object, Array],
@@ -44,8 +54,17 @@ Vue.component('data-display', {
     `,
 });
 
+/**
+ * Helper component for recursively displaying nested data in `<data-display>`.
+ *
+ * Recursively renders data from an arbitray `Object` or `Array`, showing each
+ * field of the the object as an editable form input. Supports tracking which
+ * fields have been edited, and emits the modified data as an "input" event.
+ */
 Vue.component('nested-data', {
-    props: ['data'],
+    props: {
+        data: [Object, Array],
+    },
 
     data: function() {
         return {
@@ -69,7 +88,7 @@ Vue.component('nested-data', {
             // corresponding values.
             let copy = Object.assign({}, this.data);
             return Object.assign(copy, this.edits);
-        }
+        },
     },
 
     methods: {
@@ -80,7 +99,7 @@ Vue.component('nested-data', {
                     child.clearEdits();
                 }
             }
-        }
+        },
     },
 
     template: `
