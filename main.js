@@ -33,9 +33,8 @@ let sockets = {};
 let buffers = {};
 let timeouts = {};
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+// Create the main window and start the IPC server once Electron has finished
+// initializing.
 app.on('ready', () => {
     // Install the electron devtools for developoment builds.
     if (!app.isPackaged) {
@@ -67,6 +66,14 @@ app.on('ready', () => {
     ipc.server.start();
 });
 
+/**
+ * Handles incoming packets from the game process(es).
+ *
+ * This function is called by the IPC server whenver a packet is received from
+ * a running game proces. It handles reassembling packets into complete messages,
+ * deserializing those messages into the JSON payload, and sending the message
+ * to the render process.
+ */
 function onGameMessage(data, socket) {
     // It's possible that the main window has closed but we're still receiving
     // IPC messages, in which case we simply want to ignore incoming messages.
@@ -122,6 +129,12 @@ function onGameMessage(data, socket) {
     }
 }
 
+// Handle messages coming in from the render process.
+//
+// When the user performs an edit action, the render process sends a message
+// to the main process so that it can be forwarded to the appropriate game
+// process. This method looks up the socket address for the target game, and
+// then sends it to the game via the IPC server.
 ipcMain.on('update-resource', (event, arg) => {
     let gameId = arg.gameId;
     if (!(gameId in sockets)) {
