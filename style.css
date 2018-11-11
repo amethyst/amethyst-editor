@@ -66,15 +66,3 @@ body {
   padding: 5px;
   border-bottom: 1px solid #dbdbdb;
 }
-
-.data-display {
-  list-style: none;
-}
-
-.data-display ul:not(:first-child) {
-  padding-left: 1.5em;
-}
-
-.data-display li {
-  margin: .4em 0;
-}
