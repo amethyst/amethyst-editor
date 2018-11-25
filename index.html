@@ -34,12 +34,12 @@
       </section>
 
       <!-- Currently selected game. -->
-      <div v-if="gameIds.length >= 0" class="full-screen">
+      <div v-if="gameIds.length > 0" class="full-screen">
 
         <!--
           Tabs for selecting the active game. Auto-hides until there is more than one connected game.
         -->
-        <div v-if="gameIds.length >= 1" class="header tabs is-boxed is-medium">
+        <div v-if="gameIds.length > 1" class="header tabs is-boxed is-medium">
           <ul>
             <li
               v-for="(gameId, index) in gameIds"
@@ -56,7 +56,7 @@
           <nav class="vertical-panel entities-panel">
             <div class="panel-heading">
               <div style="float:left;">Entities</div>
-              <button style="float:right;" class="button">+</button>
+              <button class="button add-entity" v-on:click="activeGame().createEntities(1)">+</button>
             </div>
             <div class="scrollable">
               <div
@@ -84,7 +84,7 @@
                   >{{ component.name }}</span>
               </div>
               <div style="margin-left: auto;">
-                <button class="button">x</button>
+                <button class="button" v-on:click="activeGame().destroyEntities(entity)">x</button>
               </div>
               </div>
             </div>
