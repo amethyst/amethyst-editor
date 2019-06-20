@@ -1,3 +1,6 @@
+# Deprecation Notice
+No further development is being done on this version. You can find the current work here: https://github.com/amethyst/atelier-editor
+
 # Amethyst Electron Editor
 
 [![Join us on Discord](https://img.shields.io/discord/425678876929163284.svg?logo=discord)](https://discord.gg/GnP5Whs)
