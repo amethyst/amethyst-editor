@@ -163,6 +163,26 @@ ipcRenderer.on('data', (event, data) => {
                     type: 'ComponentUpdate'
                 });
             },
+
+            createEntities: function(amount) {
+                console.log('AddEntity');
+
+                ipcRenderer.send('update-data', {
+                    gameId: this.gameId,
+                    amount: amount,
+                    type: 'CreateEntities'
+                });
+            },
+
+            destroyEntities: function(entity) {
+                console.log('DestroyEntities');
+
+                ipcRenderer.send('update-data', {
+                    gameId: this.gameId,
+                    entities: [entity],
+                    type: 'DestroyEntities'
+                });
+            }
         };
         game.update(data.data);
 

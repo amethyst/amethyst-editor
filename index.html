@@ -54,30 +54,39 @@
         <div v-if="activeGame().activeTab === 0" class="main horizontal-panel">
           <!-- List of entities. -->
           <nav class="vertical-panel entities-panel">
-            <h2 class="panel-heading">Entities</h2>
+            <div class="panel-heading">
+              <div style="float:left;">Entities</div>
+              <button class="button add-entity" v-on:click="activeGame().createEntities(1)">+</button>
+            </div>
             <div class="scrollable">
-              <a
-                v-for="entity in activeGame().entities"
+              <div
                 v-bind:class="{ 'is-active': activeGame().selectedEntity != null && entity.id === activeGame().selectedEntity.id }"
-                v-on:click="selectEntity(entity)"
+                v-for="entity in activeGame().entities"
                 class="panel-block"
               >
-                <span class="panel-icon">{{ entity.id }}</span>
-
-                <div class="tags">
-                  <span
-                    v-for="component in activeGame().components"
-                    v-if="component.data[entity.id] !== undefined"
-                    v-bind:class="{
-                      'is-primary': component.data[entity.id] !== null,
-                      'is-info': component.data[entity.id] === null,
-                    }"
-                    class="tag"
+                <div
+                  v-on:click="selectEntity(entity)"
+                  class="panel-icon"
+                >{{ entity.id }}</div>
+                <div
+                  v-bind:class="{ 'is-active': entity.id === activeGame().selectedEntity }"
+                  class="tags"
                   >
-                    {{ component.name }}
-                  </span>
-                </div>
-              </a>
+                  <span
+                  v-on:click="selectEntity(entity)"
+                  v-for="component in activeGame().components"
+                  v-if="component.data[entity.id] !== undefined"
+                  v-bind:class="{
+                    'is-primary': component.data[entity.id] !== null,
+                    'is-info': component.data[entity.id] === null,
+                  }"
+                  class="tag"
+                  >{{ component.name }}</span>
+              </div>
+              <div style="margin-left: auto;">
+                <button class="button" v-on:click="activeGame().destroyEntities(entity)">x</button>
+              </div>
+              </div>
             </div>
           </nav>
 
